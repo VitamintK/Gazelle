@@ -20,13 +20,14 @@ if (!$AutoSuggest) {
 	$DB->query("
 		SELECT
 			a.ArtistID,
-			a.Name
+			a.Name,
+			SUM(t.Snatched) AS Snatches
 		FROM artists_group AS a
 			INNER JOIN torrents_artists AS ta ON ta.ArtistID=a.ArtistID
 			INNER JOIN torrents AS t ON t.GroupID=ta.GroupID
 		WHERE a.Name LIKE '".db_string(str_replace('\\','\\\\',$Letters),true)."%'
 		GROUP BY ta.ArtistID
-		ORDER BY t.Snatched DESC
+		ORDER BY Snatches DESC
 		LIMIT $Limit");
 	$AutoSuggest = $DB->to_array(false,MYSQLI_NUM,false);
 	$Cache->cache_value('autocomplete_artist_'.$KeySize.'_'.$Letters,$AutoSuggest,1800 + 7200 * ($MaxKeySize - $KeySize)); // Can't cache things for too long in case names are edited
